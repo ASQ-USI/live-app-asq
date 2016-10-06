@@ -1,0 +1,28 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<dom-module id="asq-toolbar">
+    <style>
+        app-toolbar {
+            /* Toolbar is the main header, so give it some color */
+            background-color: #5a5a5a;
+            font-family: 'Roboto', Helvetica, sans-serif;
+            color: white;
+            --app-toolbar-font-size: 24px;
+        }
+    </style>
+    <template>
+        <app-toolbar id="toolbar">
+            <div main-title></div>
+            <paper-icon-button icon="thumb-up"></paper-icon-button>
+            <paper-icon-button icon="thumb-down"></paper-icon-button>
+        </app-toolbar>
+    </template>
+    <script>
+        Polymer({
+            is:'asq-toolbar'
+        })
+    </script>
+
+</dom-module>
