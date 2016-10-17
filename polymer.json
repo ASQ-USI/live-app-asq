@@ -1,0 +1,17 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/asq-live-app.html",
+  "fragments": [
+    "src/elements/asq-live-app.html",
+    "src/elements/asq-toolbar.html"
+  ],
+  "sourceGlobs": [
+    "src/**/*",
+    "images/**/*",
+    "bower.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+  ]
+}
