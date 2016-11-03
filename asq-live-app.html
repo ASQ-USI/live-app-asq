@@ -1,21 +1,22 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="./src/elements/asq-toolbar/asq-toolbar.html">
+<link rel="import" href="./src/elements/asq-live-app-presenter/asq-live-app-presenter.html">
+<link rel="import" href="./src/elements/asq-live-app-viewer/asq-live-app-viewer.html">
 <dom-module id="asq-live-app">
 
-    <style>
-        :host{
-            bottom:0;
-            position: fixed;
-            width: 100%;
-            color: black;
-        }
-    </style>
-    <template>
-        <asq-toolbar></asq-toolbar>
+
+    <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}">
+        <asq-live-app-presenter></asq-live-app-presenter>
+    </template>
+    <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
+        <asq-live-app-viewer></asq-live-app-viewer>
     </template>
     <script>
         Polymer({
-            is:"asq-live-app"
+            is:"asq-live-app",
+            behaviors:[
+                ASQ.asqElementBehavior
+            ]
         })
 
 
