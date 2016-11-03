@@ -1,22 +1,26 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../../bower_components/app-layout/app-toolbar/app-toolbar.html">
-<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../polymer/polymer.html">
+<link rel="import" href="../../../../paper-slider/paper-slider.html">
+<link rel="import" href="../../../../app-layout/app-toolbar/app-toolbar.html">
 <dom-module id="asq-toolbar">
     <style>
         app-toolbar {
-            /* Toolbar is the main header, so give it some color */
-            background-color: #5a5a5a;
+            background-color: #CFD8DC;
             font-family: 'Roboto', Helvetica, sans-serif;
-            color: white;
-            --app-toolbar-font-size: 24px;
+
+            height: 60px;
+        }
+        #lecture-quality-label{
+            font-size: 12px;
+            padding: 0 20px;
         }
     </style>
     <template>
         <app-toolbar id="toolbar">
-            <div main-title></div>
-            <paper-icon-button icon="thumb-up"></paper-icon-button>
-            <paper-icon-button icon="thumb-down"></paper-icon-button>
+            <div>
+                <div id="lecture-quality-label">How is the lecture?</div>
+                <paper-slider></paper-slider>
+            </div>
+
         </app-toolbar>
     </template>
     <script>
