@@ -7,7 +7,8 @@
   "dependencies": {
     "app-layout": "PolymerElements/app-layout#^0.10.0",
     "polymer": "Polymer/polymer#^1.4.0",
-    "paper-slider": "PolymerElements/paper-slider#^1.0.12"
+    "paper-slider": "PolymerElements/paper-slider#^1.0.12",
+    "asq-base": "ASQ-USI-Elements/asq-base"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
