@@ -18,14 +18,22 @@
         <app-toolbar id="toolbar">
             <div>
                 <div id="lecture-quality-label">How is the lecture?</div>
-                <paper-slider></paper-slider>
+                <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
             </div>
 
         </app-toolbar>
     </template>
     <script>
         Polymer({
-            is:'asq-toolbar'
+            is:'asq-toolbar',
+            sliderChange: function () {
+                this.fire('live-app',{
+                    data:{
+                        value:this.sliderValue
+                    },
+                    type:"SLIDER_CHANGED"
+                })
+            }
         })
     </script>
 
