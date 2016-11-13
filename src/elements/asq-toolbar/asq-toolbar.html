@@ -27,11 +27,11 @@
         Polymer({
             is:'asq-toolbar',
             sliderChange: function () {
-                this.fire('live-app',{
+                this.fire('liveApp', {
                     data:{
                         value:this.sliderValue
                     },
-                    type:"SLIDER_CHANGED"
+                    type:"slider-changed"
                 })
             }
         })
