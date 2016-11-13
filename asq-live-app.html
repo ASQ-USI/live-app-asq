@@ -4,22 +4,22 @@
 <link rel="import" href="./src/elements/asq-live-app-viewer/asq-live-app-viewer.html">
 <dom-module id="asq-live-app">
 
-
+  <template>
     <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}">
-        <asq-live-app-presenter></asq-live-app-presenter>
+      <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-        <asq-live-app-viewer></asq-live-app-viewer>
+      <asq-live-app-viewer></asq-live-app-viewer>
     </template>
-    <script>
-        Polymer({
-            is:"asq-live-app",
-            behaviors:[
-                ASQ.asqElementBehavior
-            ]
-        })
+  </template>
 
-
-    </script>
+  <script>
+    Polymer({
+      is:"asq-live-app",
+      behaviors:[
+      ASQ.asqElementBehavior
+      ]
+    });
+  </script>
 
 </dom-module>
