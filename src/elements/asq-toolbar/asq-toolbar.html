@@ -6,19 +6,30 @@
         app-toolbar {
             background-color: #CFD8DC;
             font-family: 'Roboto', Helvetica, sans-serif;
-
             height: 60px;
         }
         #lecture-quality-label{
             font-size: 12px;
             padding: 0 20px;
+            text-align: center;
+        }
+        #sliderContainer{
+            display:inline-flex;
+        }
+        .sliderText{
+            font-size: 12px;
+            padding-top: 10px;
         }
     </style>
     <template>
         <app-toolbar id="toolbar">
             <div>
-                <div id="lecture-quality-label">How is the lecture?</div>
-                <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
+                <div id="lecture-quality-label">How well do you understand this slide?</div>
+                <div id="sliderContainer">
+                    <span class="sliderText">I am lost</span>
+                    <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
+                    <span class="sliderText">I get it</span>
+                </div>
             </div>
 
         </app-toolbar>
@@ -26,6 +37,12 @@
     <script>
         Polymer({
             is:'asq-toolbar',
+            properties:{
+                sliderValue:{
+                    type: Number,
+                    value: 50
+                }
+            },
             sliderChange: function () {
                 this.fire('liveApp', {
                     data:{
