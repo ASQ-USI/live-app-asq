@@ -1,57 +1,170 @@
 <link rel="import" href="../../../../polymer/polymer.html">
 <link rel="import" href="../../../../paper-slider/paper-slider.html">
 <link rel="import" href="../../../../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../../../paper-button/paper-button.html">
+<link rel="import" href="../../../../paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../../../iron-flex-layout/iron-flex-layout.html">
 <dom-module id="asq-toolbar">
-    <style>
-        app-toolbar {
-            background-color: #CFD8DC;
-            font-family: 'Roboto', Helvetica, sans-serif;
-            height: 60px;
-        }
-        #lecture-quality-label{
-            font-size: 12px;
-            padding: 0 20px;
-            text-align: center;
-        }
-        #sliderContainer{
-            display:inline-flex;
-        }
-        .sliderText{
-            font-size: 12px;
-            padding-top: 10px;
-        }
-    </style>
-    <template>
-        <app-toolbar id="toolbar">
-            <div>
-                <div id="lecture-quality-label">How well do you understand this slide?</div>
-                <div id="sliderContainer">
-                    <span class="sliderText">I am lost</span>
-                    <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
-                    <span class="sliderText">I get it</span>
-                </div>
-            </div>
+  <style>
+    app-toolbar {
+      background-color: #CFD8DC;
+      font-family: 'Roboto', Helvetica, sans-serif;
 
-        </app-toolbar>
-    </template>
-    <script>
-        Polymer({
-            is:'asq-toolbar',
-            properties:{
-                sliderValue:{
-                    type: Number,
-                    value: 50
-                }
-            },
-            sliderChange: function () {
-                this.fire('liveApp', {
-                    data:{
-                        value:this.sliderValue
-                    },
-                    type:"student-perception-change"
-                })
-            }
-        })
-    </script>
-
+      height: 60px;
+    }
+    #lecture-quality-label{
+      font-size: 12px;
+      padding: 0 20px;
+      text-align: center;
+    }
+    #sliderContainer{
+      display:inline-flex;
+    }
+    .sliderText{
+      font-size: 12px;
+      padding-top: 10px;
+    }
+    #bgDiv{
+      position: fixed; 
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0; 
+      background: transparent;
+    }
+    #currentSlideText{
+      font-size: 0.85em;
+      text-align: center;
+    }
+    #paperDrawerPanel{
+      @apply(--layout-fixed-bottom);
+    }
+  </style>
+  <template>
+    <app-toolbar id="toolbar" main>
+      <div>
+        <div id="lecture-quality-label">How well do you understand this slide?</div>
+        <div id="sliderContainer">
+          <span class="sliderText">I am lost</span>
+          <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
+          <span class="sliderText">I get it</span>
+        </div>
+      </div>
+      <div main-title></div>
+      <paper-button icon="menu" on-tap="_togglePanel"> Ask a question </paper-button>
+      <paper-drawer-panel selected="{{_paperDrawerSelected}}" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
+          <div drawer id="paperDrawerPanelDiv"> 
+            <div id="currentSlideText"> {{_currentSlide}} </div>
+            <paper-textarea id="textArea" label="Enter your question here"></paper-textarea> 
+            <paper-button icon="menu" on-tap="_sendQuestion">
+              Send
+            </paper-button>
+          </div>
+      </paper-drawer-panel>
+    </app-toolbar>
+  </template>
+  <script>
+    Polymer({
+      is:'asq-toolbar',
+      properties:{
+        sliderValue:{
+          type: Number,
+          value: 50
+        },
+        _isPaperDrawerOpen : {
+          type: Boolean,
+          computed: '_paperDrawerSelectedChanged(_paperDrawerSelected)'
+        },
+        _paperDrawerSelected: {
+          type: String,
+          notify: true
+        },
+        _currentSlide: {
+          type: String,
+          notify: true
+        },
+        _answerStartTime: {
+          type: Date
+        },
+      },
+      observers: ['_updatePointerEvents(_isPaperDrawerOpen)'],
+      setPointerEvents: function(pointerEvents) {
+        const drawer = this.getPaperDrawerPanel();
+        drawer.style.pointerEvents = pointerEvents;
+      },
+      getPaperDrawerPanel: function (){
+        return this.$.paperDrawerPanel
+      },
+      getTextArea: function() {
+        return this.$.textArea;
+      },
+      getSlideNameFromWindow: function() {
+        return window.location.hash.split('/')[1];
+      },
+      getCurrentSlide: function() {
+        return this._currentSlide
+      },
+      getAnswerStartTime: function() {
+        return this._answerStartTime;
+      },
+      setCurrentSlide: function (name) {
+        this.set('_currentSlide', name); 
+      },
+      setAnswerStartTime: function (date) {
+        this.set('_answerStartTime', date);
+      },
+      _isDrawerOpen: function () {
+        return this._isPaperDrawerOpen;
+      },
+      _paperDrawerSelectedChanged: function(val) {
+        return val === 'drawer';
+      },
+      sliderChange: function () {
+        const event = {
+          data:{
+            value: this.sliderValue
+          },
+          type:'student-perception-change',
+        };
+        this.fire('liveApp', event)
+      },
+      _sendQuestion: function() {
+        const textArea = this.getTextArea();
+        const text = textArea.value;
+        // User has not inserted any text
+        if (typeof text === 'undefined') return;
+        // trim() removes whitespaces
+        const content = text.trim();
+        if (content.length === 0) return;
+        const currentSlide = this.getCurrentSlide();
+        const answerStartTime = this.getAnswerStartTime();
+        const event = {
+          answerStartTime,
+          data:{
+            slide: currentSlide,
+            value: content
+          },
+          type:'student-question-submitted',
+        }
+        this.fire('liveApp', event);
+      },
+      _togglePanel: function () {
+        const drawer = this.getPaperDrawerPanel();
+        drawer.togglePanel();
+        if(this._isDrawerOpen()){
+          const slideName = this.getSlideNameFromWindow();
+          this.setCurrentSlide(slideName);
+          const currentDate = new Date();
+          this.setAnswerStartTime(currentDate);
+        }
+      },
+      _updatePointerEvents: function(){
+        if(this._isDrawerOpen()){
+          this.setPointerEvents('auto');
+        }else{
+          this.setPointerEvents('none');
+        }
+      }
+    })
+  </script>
 </dom-module>
