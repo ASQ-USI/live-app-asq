@@ -138,8 +138,10 @@
         if (content.length === 0) return;
         const currentSlide = this.getCurrentSlide();
         const answerStartTime = this.getAnswerStartTime();
+        const sumbissionDate = new Date();
         const event = {
           answerStartTime,
+          sumbissionDate,
           data:{
             slide: currentSlide,
             value: content
