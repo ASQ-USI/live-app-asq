@@ -4,6 +4,7 @@
 <link rel="import" href="../../../../paper-button/paper-button.html">
 <link rel="import" href="../../../../paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../paper-dialog/paper-dialog.html">
 <dom-module id="asq-toolbar">
   <style>
     app-toolbar {
@@ -62,6 +63,10 @@
           </div>
       </paper-drawer-panel>
     </app-toolbar>
+    <paper-dialog id="dialog">
+      <h2>User {{question.submission.user}} asks:</h2>
+      <p> {{question.submission.value}} </p>
+    </paper-dialog>
   </template>
   <script>
     Polymer({
@@ -86,6 +91,11 @@
         _answerStartTime: {
           type: Date
         },
+        question: {
+          type: Object,
+          notify:true,
+          observer: '_showQuestion',
+        },
       },
       observers: ['_updatePointerEvents(_isPaperDrawerOpen)'],
       setPointerEvents: function(pointerEvents) {
@@ -97,6 +107,9 @@
       },
       getTextArea: function() {
         return this.$.textArea;
+      },
+      getPaperDialog() {
+        return this.$.dialog;
       },
       getSlideNameFromWindow: function() {
         return window.location.hash.split('/')[1];
@@ -118,6 +131,10 @@
       },
       _paperDrawerSelectedChanged: function(val) {
         return val === 'drawer';
+      },
+      _openPaperDialog() {
+        const dialog = this.getPaperDialog();
+        dialog.open();
       },
       sliderChange: function () {
         const event = {
@@ -166,7 +183,10 @@
         }else{
           this.setPointerEvents('none');
         }
-      }
+      },
+      _showQuestion: function () {
+        this._openPaperDialog();
+      },
     })
   </script>
 </dom-module>

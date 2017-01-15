@@ -9,17 +9,25 @@
       <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-      <asq-live-app-viewer></asq-live-app-viewer>
+      <asq-live-app-viewer question="{{question}}"></asq-live-app-viewer> 
     </template>
   </template>
-
+  
   <script>
     Polymer({
       is:"asq-live-app",
       behaviors:[
       ASQ.asqElementBehavior
-      ]
-    });
+      ],
+      properties: {
+        question: {
+          type: Object,
+          notify: true,
+        },
+      },
+      showQuestion: function (question) {
+        this.set('question', question);
+      },
+    })
   </script>
-
 </dom-module>

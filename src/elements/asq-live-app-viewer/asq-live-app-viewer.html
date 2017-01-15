@@ -13,14 +13,20 @@
     }
   </style>
   <template>
-    <asq-toolbar></asq-toolbar>
+    <asq-toolbar question="{{question}}"></asq-toolbar>
   </template>
   <script>
     Polymer({
       is:'asq-live-app-viewer',
       behaviors:[
       ASQ.asqElementBehavior
-      ]
+      ],
+      properties: {
+        question: {
+          type: Object,
+          notify: true,
+        },
+      },
      })
   </script>
 </dom-module>
