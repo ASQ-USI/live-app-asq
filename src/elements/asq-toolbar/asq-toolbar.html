@@ -40,6 +40,29 @@
     #paperDrawerPanel{
       @apply(--layout-fixed-bottom);
     }
+    paper-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      margin: 0px;
+      height: 92%;
+      width: 100%;
+    }
+    #dialogHeader {
+      font-size: 2.0em;
+      line-height: 2;
+    }
+    #dialogContent > p {
+      font-size: -webkit-xxx-large;
+      line-height: 1;
+    }
+    #dialogContent {
+      height: 80%;
+      overflow-y: scroll;
+    }
+    ::-webkit-scrollbar{
+      width: 0px;
+    }
   </style>
   <template>
     <app-toolbar id="toolbar" main>
@@ -63,9 +86,11 @@
           </div>
       </paper-drawer-panel>
     </app-toolbar>
-    <paper-dialog id="dialog">
-      <h2>User {{question.submission.user}} asks:</h2>
-      <p> {{question.submission.value}} </p>
+    <paper-dialog id="dialog" opened="{{_paperDialogOpened}}">
+      <h2 id="dialogHeader">User {{question.submission.user}} asks:</h2>
+      <div id="dialogContent">
+        <p>{{question.submission.value}}</p>
+      </div>
     </paper-dialog>
   </template>
   <script>
@@ -84,6 +109,14 @@
           type: String,
           notify: true
         },
+        _paperDialogOpened: {
+          type: Boolean,
+          notify: true,
+        },
+        _isPaperDialogOpen : {
+          type: Boolean,
+          computed: '_paperDialogOpenedChanged(_paperDialogOpened)'
+        },
         _currentSlide: {
           type: String,
           notify: true
@@ -97,10 +130,9 @@
           observer: '_showQuestion',
         },
       },
-      observers: ['_updatePointerEvents(_isPaperDrawerOpen)'],
-      setPointerEvents: function(pointerEvents) {
-        const drawer = this.getPaperDrawerPanel();
-        drawer.style.pointerEvents = pointerEvents;
+      observers: ['_updatePointerEvents(_isPaperDrawerOpen, _isPaperDialogOpen)'],
+      setElementPointerEvents: function(element, pointerEvents) {
+        element.style.pointerEvents = pointerEvents;
       },
       getPaperDrawerPanel: function (){
         return this.$.paperDrawerPanel
@@ -110,6 +142,9 @@
       },
       getPaperDialog() {
         return this.$.dialog;
+      },
+      getDialogContent() {
+        return this.$.dialogContent;
       },
       getSlideNameFromWindow: function() {
         return window.location.hash.split('/')[1];
@@ -129,8 +164,14 @@
       _isDrawerOpen: function () {
         return this._isPaperDrawerOpen;
       },
+      _isDialogOpen: function () {
+        return this._isPaperDialogOpen;
+      },
       _paperDrawerSelectedChanged: function(val) {
         return val === 'drawer';
+      },
+      _paperDialogOpenedChanged(val) {
+        return val;
       },
       _openPaperDialog() {
         const dialog = this.getPaperDialog();
@@ -177,14 +218,29 @@
           this.setAnswerStartTime(currentDate);
         }
       },
-      _updatePointerEvents: function(){
+      _updateDrawerPointerEvents: function() {
+        const drawer = this.getPaperDrawerPanel();
+        let ptrEvents = 'none';
         if(this._isDrawerOpen()){
-          this.setPointerEvents('auto');
-        }else{
-          this.setPointerEvents('none');
+          ptrEvents = 'auto';
         }
+        this.setElementPointerEvents(drawer, ptrEvents);
+      },
+      _updateDialogPointerEvents: function() {
+        const dialog = this.getPaperDialog();
+        let ptrEvents = 'none';
+        if(this._isDialogOpen()){
+          ptrEvents = 'auto';
+        }
+        this.setElementPointerEvents(dialog, ptrEvents);
+
+      },
+      _updatePointerEvents: function() {
+        this._updateDrawerPointerEvents();
+        this._updateDialogPointerEvents();
       },
       _showQuestion: function () {
+        const dialog = this.getPaperDialog();
         this._openPaperDialog();
       },
     })
