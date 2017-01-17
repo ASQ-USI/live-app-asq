@@ -57,7 +57,7 @@
       line-height: 1;
     }
     #dialogContent {
-      height: 80%;
+      height: 77%;
       overflow-y: scroll;
     }
     ::-webkit-scrollbar{
@@ -90,6 +90,10 @@
       <h2 id="dialogHeader">User {{question.submission.user}} asks:</h2>
       <div id="dialogContent">
         <p>{{question.submission.value}}</p>
+      </div>
+      <div class="buttons">
+        <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion"></paper-icon-button>
+        <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion"></paper-icon-button>
       </div>
     </paper-dialog>
   </template>
@@ -186,6 +190,9 @@
         };
         this.fire('liveApp', event)
       },
+      _sendLiveAppEvent: function(event) {
+        this.fire('liveApp', event)
+      },
       _sendQuestion: function() {
         const textArea = this.getTextArea();
         const text = textArea.value;
@@ -206,7 +213,7 @@
           },
           type:'student-question-submitted',
         }
-        this.fire('liveApp', event);
+        this._sendLiveAppEvent(event);
       },
       _togglePanel: function () {
         const drawer = this.getPaperDrawerPanel();
@@ -242,6 +249,28 @@
       _showQuestion: function () {
         const dialog = this.getPaperDialog();
         this._openPaperDialog();
+      },
+      _upvoteQuestion: function () {
+        const question = this.question;
+        const event = {
+          type: 'student-question-rated',
+          data: {
+            upvote: true,
+            question,
+          }
+        };
+        this._sendLiveAppEvent(event);
+      },
+      _downvoteQuestion: function () {
+        const question = this.question;
+        const event = {
+          type: 'student-question-rated',
+          data: {
+            downvote: true,
+            question,
+          }
+        };
+        this._sendLiveAppEvent(event);
       },
     })
   </script>
