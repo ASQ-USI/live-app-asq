@@ -63,6 +63,12 @@
     ::-webkit-scrollbar{
       width: 0px;
     }
+    #up {
+      color: green;
+    }
+    #down {
+      color: red;
+    }
   </style>
   <template>
     <app-toolbar id="toolbar" main>
@@ -93,11 +99,11 @@
       </div>
       <div class="buttons">
         <div id="thumbUpDiv">
-          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion"></paper-icon-button>
+          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" id="up"></paper-icon-button>
           <span>{{question.upvotes.length}}</span>
         </div>
         <div id="thumbDownDiv">
-          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion"></paper-icon-button>
+          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" id="down"></paper-icon-button>
           <span>{{question.downvotes.length}}</span>
         </div>
       </div>
