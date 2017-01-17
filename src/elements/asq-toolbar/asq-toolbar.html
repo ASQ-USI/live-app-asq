@@ -92,8 +92,14 @@
         <p>{{question.submission.value}}</p>
       </div>
       <div class="buttons">
-        <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion"></paper-icon-button>
-        <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion"></paper-icon-button>
+        <div id="thumbUpDiv">
+          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion"></paper-icon-button>
+          <span>{{question.upvotes.length}}</span>
+        </div>
+        <div id="thumbDownDiv">
+          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion"></paper-icon-button>
+          <span>{{question.downvotes.length}}</span>
+        </div>
       </div>
     </paper-dialog>
   </template>
