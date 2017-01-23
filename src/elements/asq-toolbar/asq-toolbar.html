@@ -7,6 +7,11 @@
 <link rel="import" href="../../../../paper-dialog/paper-dialog.html">
 <dom-module id="asq-toolbar">
   <style>
+    :host{
+      --paper-drawer-panel-right-drawer-container: {
+        padding: 10px;
+      };
+    }
     app-toolbar {
       background-color: #CFD8DC;
       font-family: 'Roboto', Helvetica, sans-serif;
@@ -39,6 +44,10 @@
     }
     #paperDrawerPanel{
       @apply(--layout-fixed-bottom);
+    }
+    #sendButtonContainer{
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
     }
     paper-dialog {
       position: fixed;
@@ -85,10 +94,12 @@
       <paper-drawer-panel selected="{{_paperDrawerSelected}}" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
           <div drawer id="paperDrawerPanelDiv"> 
             <div id="currentSlideText"> {{_currentSlide}} </div>
-            <paper-textarea id="textArea" label="Enter your question here"></paper-textarea> 
-            <paper-button icon="menu" on-tap="_sendQuestion">
+            <paper-textarea id="textArea" label="Enter your question or remark here"></paper-textarea>
+            <div id="sendButtonContainer">
+              <paper-button icon="menu" on-tap="_sendQuestion" raised>
               Send
             </paper-button>
+            </div>
           </div>
       </paper-drawer-panel>
     </app-toolbar>
