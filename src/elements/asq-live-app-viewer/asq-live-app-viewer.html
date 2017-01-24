@@ -13,7 +13,7 @@
     }
   </style>
   <template>
-    <asq-toolbar question="{{question}}"></asq-toolbar>
+    <asq-toolbar question="{{question}}" questions="{{questions}}"></asq-toolbar>
   </template>
   <script>
     Polymer({
@@ -24,6 +24,10 @@
       properties: {
         question: {
           type: Object,
+          notify: true,
+        },
+        questions: {
+          type: Array,
           notify: true,
         },
       },

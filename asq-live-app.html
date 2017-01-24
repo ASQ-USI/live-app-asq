@@ -9,7 +9,7 @@
       <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-      <asq-live-app-viewer question="{{question}}"></asq-live-app-viewer> 
+      <asq-live-app-viewer question="{{question}}" questions="{{questions}}"></asq-live-app-viewer> 
     </template>
   </template>
   
@@ -24,9 +24,20 @@
           type: Object,
           notify: true,
         },
+        questions: {
+          type: Array,
+          notify: true,
+        },
       },
       showQuestion: function (question) {
         this.set('question', question);
+      },
+      questionRated: function (question) {
+        this.set('question.upvotes', question.upvotes);
+        this.set('question.downvotes', question.downvotes);
+      },
+      updateQuestions: function (questions) {
+        this.set('questions', questions);
       },
     })
   </script>

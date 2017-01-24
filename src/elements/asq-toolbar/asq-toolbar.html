@@ -5,6 +5,8 @@
 <link rel="import" href="../../../../paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../../iron-icon/iron-icon.html">
 <dom-module id="asq-toolbar">
   <style>
     :host{
@@ -57,6 +59,11 @@
       height: 92%;
       width: 100%;
     }
+    .questionsDiv {
+      overflow-y: scroll;
+      /*This property is needed otherwise it won't scroll!!!*/
+      height: 83%;
+    }
     #dialogHeader {
       font-size: 2.0em;
       line-height: 2;
@@ -72,11 +79,73 @@
     ::-webkit-scrollbar{
       width: 0px;
     }
-    #up {
-      color: green;
+    .container {
+      display: flex;
+      color: black;
+      background: white;
+      margin: 3px auto;
+      padding: 5px;
     }
-    #down {
-      color: red;
+    .questionDataContainer {
+      flex: 1;
+      @apply(--layout-horizontal);
+      @apply(--layout-start);
+    }
+    .slideInfo {
+      width: 100px;
+      font-size: 0.8em;
+      color: #696969;
+    }
+    .slideInfoHeader{
+      font-size: 1em;
+      color: white;
+    }
+    .questionData {
+      flex: 1;
+      overflow-y: scroll;
+    }
+    .userInfo {
+      width: 140px;
+    }
+    .votingInfo{
+      width: 120px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+    .up {
+      color: #66BB6A;
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      };   
+    }
+    .down {
+      color: #EF5350;
+      height: 20px;
+      /*padding-left: 10px;*/
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      }; 
+    }
+
+    .thumb-container{
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      overflow-x: hidden;
+    }
+
+    .thumb-score{
+      font-size: 0.9em;
+      padding-top: 1px;
+    }
+
+    .textWrap {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
   </style>
   <template>
@@ -96,9 +165,32 @@
             <div id="currentSlideText"> {{_currentSlide}} </div>
             <paper-textarea id="textArea" label="Enter your question or remark here"></paper-textarea>
             <div id="sendButtonContainer">
-              <paper-button icon="menu" on-tap="_sendQuestion" raised>
+              <paper-button icon="menu" on-tap="_sendQuestion" raised id="sendButton">
               Send
             </paper-button>
+            </div>
+            <div class="questionsDiv">
+              <template is="dom-repeat" items="[[questions]]">
+                <div class="container">
+                  <div class="questionDataContainer">
+                    <div class="slideInfo textWrap">{{item.submission.slide}}</div>
+                    <div class="questionData">
+                      <div class="questionContent">{{item.submission.value}}</div>
+                    </div>
+                    <div class="userInfo textWrap">{{item.submission.user}}</div>
+                    <div class="votingInfo">
+                    <div class="thumb-container">
+                      <paper-icon-button icon="icons:thumb-up" class="up" on-tap="_upvoteQuestion"></paper-icon-button>
+                      <div class="thumb-score">{{item.upvotes.length}}</div>
+                    </div>
+                    <div class="thumb-container">
+                      <paper-icon-button icon="icons:thumb-down" class="down" on-tap="_downvoteQuestion"></paper-icon-button>
+                      <div class="thumb-score"> {{item.downvotes.length}}</div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
       </paper-drawer-panel>
@@ -110,11 +202,11 @@
       </div>
       <div class="buttons">
         <div id="thumbUpDiv">
-          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" id="up"></paper-icon-button>
+          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" class="up"></paper-icon-button>
           <span>{{question.upvotes.length}}</span>
         </div>
         <div id="thumbDownDiv">
-          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" id="down"></paper-icon-button>
+          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" class="down"></paper-icon-button>
           <span>{{question.downvotes.length}}</span>
         </div>
       </div>
@@ -156,54 +248,80 @@
           notify:true,
           observer: '_showQuestion',
         },
+        questions: {
+          type: Array,
+          notify: true,
+        },
+
       },
-      observers: ['_updatePointerEvents(_isPaperDrawerOpen, _isPaperDialogOpen)'],
+      observers: [
+        '_updatePointerEvents(_isPaperDrawerOpen, _isPaperDialogOpen)',
+      ],
       setElementPointerEvents: function(element, pointerEvents) {
         element.style.pointerEvents = pointerEvents;
       },
+
       getPaperDrawerPanel: function (){
         return this.$.paperDrawerPanel
       },
+
       getTextArea: function() {
         return this.$.textArea;
       },
-      getPaperDialog() {
+
+      getPaperDialog: function () {
         return this.$.dialog;
       },
-      getDialogContent() {
+
+      getDialogContent: function () {
         return this.$.dialogContent;
       },
+
+      getSendButton: function () {
+        return this.$.sendButton;
+      },
+
       getSlideNameFromWindow: function() {
         return window.location.hash.split('/')[1];
       },
+
       getCurrentSlide: function() {
         return this._currentSlide
       },
+
       getAnswerStartTime: function() {
         return this._answerStartTime;
       },
+
       setCurrentSlide: function (name) {
         this.set('_currentSlide', name); 
       },
+
       setAnswerStartTime: function (date) {
         this.set('_answerStartTime', date);
       },
+
       _isDrawerOpen: function () {
         return this._isPaperDrawerOpen;
       },
+
       _isDialogOpen: function () {
         return this._isPaperDialogOpen;
       },
+
       _paperDrawerSelectedChanged: function(val) {
         return val === 'drawer';
       },
+
       _paperDialogOpenedChanged(val) {
         return val;
       },
+
       _openPaperDialog() {
         const dialog = this.getPaperDialog();
         dialog.open();
       },
+
       sliderChange: function () {
         const event = {
           data:{
@@ -211,11 +329,13 @@
           },
           type:'student-perception-change',
         };
-        this.fire('liveApp', event)
+        this._sendLiveAppEvent(event)
       },
+
       _sendLiveAppEvent: function(event) {
-        this.fire('liveApp', event)
+        this.fire('live-app', event)
       },
+
       _sendQuestion: function() {
         const textArea = this.getTextArea();
         const text = textArea.value;
@@ -237,7 +357,10 @@
           type:'student-question-submitted',
         }
         this._sendLiveAppEvent(event);
+        textArea.value = '';
+        this._handleBtnTimeout();
       },
+
       _togglePanel: function () {
         const drawer = this.getPaperDrawerPanel();
         drawer.togglePanel();
@@ -248,6 +371,7 @@
           this.setAnswerStartTime(currentDate);
         }
       },
+
       _updateDrawerPointerEvents: function() {
         const drawer = this.getPaperDrawerPanel();
         let ptrEvents = 'none';
@@ -256,6 +380,7 @@
         }
         this.setElementPointerEvents(drawer, ptrEvents);
       },
+
       _updateDialogPointerEvents: function() {
         const dialog = this.getPaperDialog();
         let ptrEvents = 'none';
@@ -265,16 +390,25 @@
         this.setElementPointerEvents(dialog, ptrEvents);
 
       },
+
       _updatePointerEvents: function() {
         this._updateDrawerPointerEvents();
         this._updateDialogPointerEvents();
       },
+
       _showQuestion: function () {
         const dialog = this.getPaperDialog();
         this._openPaperDialog();
       },
-      _upvoteQuestion: function () {
-        const question = this.question;
+
+      _upvoteQuestion: function (e) {
+        let question;
+        // This is made so I can differentiate if it's an upvote from the modal or from the paper drawer
+        if (e.model === undefined) {
+          question = this.question;
+        } else {
+          question = e.model.item;
+        }
         const event = {
           type: 'student-question-rated',
           data: {
@@ -284,8 +418,14 @@
         };
         this._sendLiveAppEvent(event);
       },
-      _downvoteQuestion: function () {
-        const question = this.question;
+
+      _downvoteQuestion: function (e) {
+        let question;
+        if (e.model === undefined) {
+          question = this.question;
+        } else {
+          question = e.model.item;
+        }
         const event = {
           type: 'student-question-rated',
           data: {
@@ -295,6 +435,27 @@
         };
         this._sendLiveAppEvent(event);
       },
+
+      _handleBtnTimeout: function () {
+        const button = this.getSendButton();
+        let seconds = 5;
+        const btnText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = 'Question submitted wait ' + seconds +'s';
+        const interval = setInterval(function() {
+          seconds--;
+          if (seconds === 0) {
+            clearInterval(interval);
+            button.innerHTML = btnText;
+            button.disabled = false;
+            return
+          }
+          button.disabled = true;
+          button.innerHTML = 'Question submitted wait ' + seconds +'s';
+
+        }, 1000);
+      },
+
     })
   </script>
 </dom-module>
