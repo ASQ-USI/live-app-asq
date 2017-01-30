@@ -20,7 +20,9 @@
     "redux": "^3.5.2",
     "redux-actions": "^0.11.0",
     "socket.io-client": "^1.3.5",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.1",
+    "asq-plugin": "ASQ-USI/asq-plugin",
+    "bluebird": "^2.9.7"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",
