@@ -195,7 +195,7 @@
           </div>
       </paper-drawer-panel>
     </app-toolbar>
-    <paper-dialog id="dialog" opened="{{_paperDialogOpened}}">
+    <paper-dialog id="dialog" opened="{{_paperDialogOpened}}" modal with-backdrop="{{_withBackdrop}}">
       <h2 id="dialogHeader">User {{question.submission.user}} asks:</h2>
       <div id="dialogContent">
         <p>{{question.submission.value}}</p>
@@ -252,6 +252,15 @@
           type: Array,
           notify: true,
         },
+        _withBackdrop: {
+          type: Boolean,
+          value: false,
+        },
+        closeDialog: {
+          type: Boolean,
+          notify: true,
+          observer: '_closePaperDialog'
+        }
 
       },
       observers: [
@@ -317,11 +326,14 @@
         return val;
       },
 
-      _openPaperDialog() {
+      _openPaperDialog: function () {
         const dialog = this.getPaperDialog();
         dialog.open();
       },
-
+      _closePaperDialog: function () {
+        const dialog = this.getPaperDialog();
+        dialog.close();
+      },
       sliderChange: function () {
         const event = {
           data:{

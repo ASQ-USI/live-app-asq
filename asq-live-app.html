@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../asq-base/asq-base.html">
 <link rel="import" href="./src/elements/asq-toolbar/asq-toolbar.html">
 <link rel="import" href="./src/elements/asq-live-app-presenter/asq-live-app-presenter.html">
 <link rel="import" href="./src/elements/asq-live-app-viewer/asq-live-app-viewer.html">
@@ -9,7 +10,7 @@
       <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-      <asq-live-app-viewer question="{{question}}" questions="{{questions}}"></asq-live-app-viewer> 
+      <asq-live-app-viewer question="{{question}}" questions="{{questions}}" close-dialog="{{closeDialog}}"></asq-live-app-viewer> 
     </template>
   </template>
   
@@ -28,6 +29,11 @@
           type: Array,
           notify: true,
         },
+        closeDialog: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
       },
       showQuestion: function (question) {
         this.set('question', question);
@@ -38,6 +44,9 @@
       },
       updateQuestions: function (questions) {
         this.set('questions', questions);
+      },
+      closeModal: function () {
+        this.set('closeDialog', !this.closeDialog);
       },
     })
   </script>
