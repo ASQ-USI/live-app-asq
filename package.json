@@ -1,9 +1,9 @@
 {
-  "name": "live-app-asq",
+  "name": "asq-live-app",
   "version": "0.0.0",
   "description": "A live app",
   "private": true,
-  "main": "lib/server/server.js",
+  "main": "index.js",
   "scripts": {
     "build": "gulp"
   },
