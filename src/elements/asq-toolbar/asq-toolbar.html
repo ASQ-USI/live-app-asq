@@ -435,15 +435,15 @@
         let question;
         // This is made so I can differentiate if it's an upvote from the modal or from the paper drawer
         if (e.model === undefined) {
-          question = this.question;
+          questionId = this.question._id;
         } else {
-          question = e.model.item;
+          questionId = e.model.item._id;
         }
         const event = {
           type: 'student-question-rated',
           data: {
             upvote: true,
-            question,
+            questionId,
           }
         };
         this._sendLiveAppEvent(event);
@@ -457,15 +457,15 @@
         Polymer.dom(e).localTarget.style.color = '#EF5350'
         let question;
         if (e.model === undefined) {
-          question = this.question;
+          questionId = this.question._id;
         } else {
-          question = e.model.item;
+          questionId = e.model.item._id;
         }
         const event = {
           type: 'student-question-rated',
           data: {
             downvote: true,
-            question,
+            questionId,
           }
         };
         this._sendLiveAppEvent(event);
