@@ -10,7 +10,7 @@
       <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-      <asq-live-app-viewer question="{{question}}" questions="{{questions}}" close-dialog="{{closeDialog}}"></asq-live-app-viewer> 
+      <asq-live-app-viewer question="[[ question ]]" questions="[[ questions ]]" close-dialog="[[ closeDialog ]]"></asq-live-app-viewer> 
     </template>
   </template>
   
