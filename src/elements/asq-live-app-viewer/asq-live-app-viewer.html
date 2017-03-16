@@ -22,14 +22,24 @@
       ASQ.asqElementBehavior
       ],
       properties: {
+        /* 
+          This is the question that is showed in the paper dialog, this object contains every data that is needed for the paper dialog 
+        */
         question: {
           type: Object,
           notify: true,
         },
+        /* 
+          Array of Objects that is used by the dom repeat on the paper drawer panel, it is used to display all the viewer
+           questions under the text area
+         */
         questions: {
           type: Array,
           notify: true,
         },
+        /* This is changed from the parent element, everytime it changes, it means that the dialog that is currently open, should 
+           closed
+        */
         closeDialog: {
           type: Boolean,
           notify: true,
