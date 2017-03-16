@@ -7,6 +7,11 @@
 <link rel="import" href="../../../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../../../iron-icons/iron-icons.html">
 <link rel="import" href="../../../../iron-icon/iron-icon.html">
+<!--
+`<asq-toolbar>` injects a toolbar that contains a `<paper-slider>`, a `<paper-drawer-panel>` and a `<paper-dialog>`.
+  The element is injected automatically from the server ASQ
+-->
+
 <dom-module id="asq-toolbar">
   <style>
     :host{
@@ -168,15 +173,15 @@
         <div id="lecture-quality-label">How well do you understand this slide?</div>
         <div id="sliderContainer">
           <span class="sliderText">I am lost</span>
-          <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
+          <paper-slider min="0" max="100" value="[[ sliderValue ]]" on-change="sliderChange"></paper-slider>
           <span class="sliderText">I get it</span>
         </div>
       </div>
       <div main-title></div>
       <paper-button icon="menu" on-tap="_togglePanel"> Ask a question </paper-button>
-      <paper-drawer-panel selected="{{_paperDrawerSelected}}" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
+      <paper-drawer-panel selected="[[ _paperDrawerSelected ]]" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
           <div drawer id="paperDrawerPanelDiv"> 
-            <div id="currentSlideText"> {{_currentSlide}} </div>
+            <div id="currentSlideText"> [[ _currentSlide ]] </div>
             <paper-textarea id="textArea" label="Enter your question or remark here" max-rows="4"></paper-textarea>
             <div id="sendButtonContainer">
               <paper-button icon="menu" on-tap="_sendQuestion" raised id="sendButton">
@@ -184,21 +189,21 @@
             </paper-button>
             </div>
             <div class="questionsDiv">
-              <template is="dom-repeat" items="[[questions]]">
+              <template is="dom-repeat" items="[[ questions]]">
                 <div class="container">
                   <div class="questionDataContainer">
-                    <div class="slideInfo textWrap">{{item.submission.slide}}</div>
+                    <div class="slideInfo textWrap">[[ item.submission.slide ]]</div>
                     <div class="questionData">
-                      <div class$="{{_setClass(item.submission.value)}}">{{item.submission.value}}</div>
+                      <div class$="[[ _setClass(item.submission.value) ]]">[[ item.submission.value ]]</div>
                     </div>
                     <div class="votingInfo">
                     <div class="thumb-container">
                       <paper-icon-button icon="icons:thumb-up" class="up" on-tap="_upvoteQuestion"></paper-icon-button>
-                      <div class="thumb-score">{{item.upvotes.length}}</div>
+                      <div class="thumb-score">[[ item.upvotes.length ]]</div>
                     </div>
                     <div class="thumb-container">
                       <paper-icon-button icon="icons:thumb-down" class="down" on-tap="_downvoteQuestion"></paper-icon-button>
-                      <div class="thumb-score"> {{item.downvotes.length}}</div>
+                      <div class="thumb-score"> [[ item.downvotes.length ]]</div>
                     </div>
                     </div>
                   </div>
@@ -208,19 +213,19 @@
           </div>
       </paper-drawer-panel>
     </app-toolbar>
-    <paper-dialog id="dialog" opened="{{_paperDialogOpened}}" modal with-backdrop="{{_withBackdrop}}">
-      <h2 id="dialogHeader">User {{question.submission.user}} asks:</h2>
+    <paper-dialog id="dialog" opened="[[ _paperDialogOpened ]]" modal with-backdrop="[[ _withBackdrop ]]">
+      <h2 id="dialogHeader">User [[ question.submission.user ]] asks:</h2>
       <div id="dialogContent">
-        <p>{{question.submission.value}}</p>
+        <p>[[ question.submission.value ]]</p>
       </div>
       <div class="buttons">
         <div id="thumbUpDiv">
           <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" class="up"></paper-icon-button>
-          <span>{{question.upvotes.length}}</span>
+          <span>[[ question.upvotes.length ]]</span>
         </div>
         <div id="thumbDownDiv">
           <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" class="down"></paper-icon-button>
-          <span>{{question.downvotes.length}}</span>
+          <span>[[ question.downvotes.length ]]</span>
         </div>
       </div>
     </paper-dialog>
@@ -229,46 +234,61 @@
     Polymer({
       is:'asq-toolbar',
       properties:{
+        /* Default value for the paper-slider*/
         sliderValue:{
           type: Number,
           value: 50
         },
+        /* Boolean that is calculated everytime the `_paperDrawerSelected` property changes*/
         _isPaperDrawerOpen : {
           type: Boolean,
           computed: '_paperDrawerSelectedChanged(_paperDrawerSelected)'
         },
+        /* Binded to the `selected` property of the paper drawer panel, which can be `main` or `drawer`*/
         _paperDrawerSelected: {
           type: String,
           notify: true
         },
+        /* Binded to the `opened` property of the paper dialog, which can be `true` or `false`*/
         _paperDialogOpened: {
           type: Boolean,
           notify: true,
         },
+        /* Boolean that helps understand whether the dialog is open or not*/
         _isPaperDialogOpen : {
           type: Boolean,
           computed: '_paperDialogOpenedChanged(_paperDialogOpened)'
         },
+        /* It is used by the paper drawer panel to display the name of the current slide */
         _currentSlide: {
           type: String,
           notify: true
         },
+        /* This is calculated everytime the user opens the drawer panel, it's needed for the db */
         _answerStartTime: {
           type: Date
         },
+        /* This is the question that is showed in the paper dialog, this object contains every data that is needed for the paper dialog */
         question: {
           type: Object,
           notify:true,
           observer: '_showQuestion',
         },
+        /* Array of Objects that is used by the dom repeat on the paper drawer panel, it is used to display all the viewer
+           questions under the text area
+         */
         questions: {
           type: Array,
           notify: true,
         },
+        /* This property is binded to the paper dialog to disable the backdrop*/
         _withBackdrop: {
           type: Boolean,
           value: false,
         },
+        /* This is changed from the parent element, everytime it changes, it means that the dialog that is currently open, should 
+           closed
+        */
         closeDialog: {
           type: Boolean,
           notify: true,
@@ -279,74 +299,150 @@
       observers: [
         '_updatePointerEvents(_isPaperDrawerOpen, _isPaperDialogOpen)',
       ],
+      /*
+        Given an HTMLElement and a string changes the element pointer events
+        @param HTMLElement element - The element whose pointer events needed to be changed
+        @param String pointerEvents - The pointer events to be set to, can be `auto` or `none`
+        @return {}
+      */
       setElementPointerEvents: function(element, pointerEvents) {
         element.style.pointerEvents = pointerEvents;
       },
-
+      /*
+        Returns the paper drawer panel
+        @return {HTMLElement}
+        
+      */
       getPaperDrawerPanel: function (){
         return this.$.paperDrawerPanel
       },
-
+      /*
+        Returns the paper text area
+        @return {HTMLElement}
+        
+      */      
       getTextArea: function() {
         return this.$.textArea;
       },
-
+      /*
+        Returns the paper dialog
+        @return {HTMLElement}
+        
+      */
       getPaperDialog: function () {
         return this.$.dialog;
       },
-
+      /*
+        Returns the paper dialog content, which is a div
+        @return {HTMLElement}
+        
+      */
       getDialogContent: function () {
         return this.$.dialogContent;
       },
-
+      /*
+        Returns the send button
+        @return {HTMLElement}
+        
+      */
       getSendButton: function () {
         return this.$.sendButton;
       },
-
+      /*
+        Returns the name of the slide taken from the URL
+        @return {String}
+        
+      */
       getSlideNameFromWindow: function() {
         return window.location.hash.split('/')[1];
       },
-
+      /*
+        Returns the name of the current slide
+        @return {String}
+        
+      */
       getCurrentSlide: function() {
         return this._currentSlide
       },
-
+      /*
+        Returns when the user has started typing a question
+        @return {Date}
+        
+      */
       getAnswerStartTime: function() {
         return this._answerStartTime;
       },
-
+      /*
+        Sets the _currentSlide property
+        @return {}
+        
+      */
       setCurrentSlide: function (name) {
         this.set('_currentSlide', name); 
       },
-
+      /*
+        Sets the _answerStartTime property
+        @return {}
+        
+      */
       setAnswerStartTime: function (date) {
         this.set('_answerStartTime', date);
       },
-
+      /*
+        Returns the _isPaperDrawerOpen property
+        @return {Boolean}
+        
+      */
       _isDrawerOpen: function () {
         return this._isPaperDrawerOpen;
       },
-
+      /*
+        Sets the _isPaperDialogOpen property
+        @return {Boolean}
+        
+      */
       _isDialogOpen: function () {
         return this._isPaperDialogOpen;
       },
-
+      /*
+        Called everytime the `selected` property of the paper drawer panel changes
+        @return {Boolean}
+        
+      */
       _paperDrawerSelectedChanged: function(val) {
         return val === 'drawer';
       },
-
+      /*
+        Called everytime the `opened` property of the paper drawer dialog changes
+        @return {Boolean}
+        
+      */
       _paperDialogOpenedChanged(val) {
         return val;
       },
-
+      /*
+        Opens the paper dialog
+        @return {}
+        
+      */
       _openPaperDialog: function () {
         const dialog = this.getPaperDialog();
         dialog.open();
       },
+      /*
+        Closes the paper dialog
+        @return {}
+        
+      */
       _closePaperDialog: function () {
         const dialog = this.getPaperDialog();
         dialog.close();
       },
+      /*
+        Called everytime the value of the slider changes
+        @return {}
+        
+      */     
       sliderChange: function () {
         const event = {
           data:{
@@ -356,11 +452,19 @@
         };
         this._sendLiveAppEvent(event)
       },
-
+      /*
+        Fires a live-app event so it can be retrieved from the client
+        @return {}
+        
+      */
       _sendLiveAppEvent: function(event) {
         this.fire('live-app', event)
       },
-
+      /*
+        Takes the content of the text area, removes  whitespacesand then sends the event to the client
+        @return {}
+        
+      */
       _sendQuestion: function() {
         const textArea = this.getTextArea();
         const text = textArea.value;
@@ -385,7 +489,12 @@
         textArea.value = '';
         this._handleBtnTimeout();
       },
-
+      /*
+        Called everytime the user clicks on the `ASK A QUESTION` button, it toggles the drawer panel, if it's open it sets the 
+        _currentSlide property and the `_answerStartTime` property
+        @return {}
+        
+      */
       _togglePanel: function () {
         const drawer = this.getPaperDrawerPanel();
         drawer.togglePanel();
@@ -396,7 +505,12 @@
           this.setAnswerStartTime(currentDate);
         }
       },
-
+      /*
+        Called everytime the pointer events of the drawer panel needs to be changed, if the drawer is open then it sets the pointer
+        events to `auto`, sets to `none` otherwise
+        @return {}
+        
+      */
       _updateDrawerPointerEvents: function() {
         const drawer = this.getPaperDrawerPanel();
         let ptrEvents = 'none';
@@ -405,7 +519,12 @@
         }
         this.setElementPointerEvents(drawer, ptrEvents);
       },
-
+      /*
+        Called everytime the pointer events of the paper dialog needs to be changed, if the dialog is open then it sets the pointer
+        events to `auto`, sets to `none` otherwise
+        @return {}
+        
+      */
       _updateDialogPointerEvents: function() {
         const dialog = this.getPaperDialog();
         let ptrEvents = 'none';
@@ -415,17 +534,29 @@
         this.setElementPointerEvents(dialog, ptrEvents);
 
       },
-
+      /*
+        Called everytime `_isPaperDrawerOpen` and `_isPaperDialogOpen` properties changes, it changes the pointer events of the paper dialog and the paper drawer panel
+        @return {}
+        
+      */
       _updatePointerEvents: function() {
         this._updateDrawerPointerEvents();
         this._updateDialogPointerEvents();
       },
 
+      /*
+        Called everytime the presenter has broadcasted a question, it means that the `question` property has changes
+        @return {}
+      */
       _showQuestion: function () {
         const dialog = this.getPaperDialog();
         this._openPaperDialog();
       },
 
+      /*
+        Called everytime the thumbs-up button is pressed, it changes color of the button, sets the information that it's an upvote and fires a live-app event
+        @return {}
+      */
       _upvoteQuestion: function (e) {
         const votingInfo = Polymer.dom(e).path[4];
         const thumbContainer = Polymer.dom(votingInfo).children[1];
@@ -448,7 +579,11 @@
         };
         this._sendLiveAppEvent(event);
       },
-
+      /*
+        Called everytime the thumbs-down button is pressed, it changes color of the button, sets the information that
+        it is a downvote and fires a live-app event
+        @return {}
+      */
       _downvoteQuestion: function (e) {
         const votingInfo = Polymer.dom(e).path[4];
         const thumbContainer = Polymer.dom(votingInfo).children[0];
@@ -471,6 +606,11 @@
         this._sendLiveAppEvent(event);
       },
 
+
+      /*
+        Called everytime the user presses the send button, it disables for five second the button and changes the text inside the button
+        @return {}
+      */
       _handleBtnTimeout: function () {
         const button = this.getSendButton();
         let seconds = 5;
@@ -490,6 +630,11 @@
 
         }, 1000);
       },
+
+      /*
+        This is for the paper drawer panel, if the question content is longer than 26 characters then it adds the class `questionContent` to the element
+        @return {String}
+      */
       _setClass: function (text) {
         if (text.length < 26) return '';
         return 'questionContent';
