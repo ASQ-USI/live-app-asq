@@ -13,7 +13,12 @@
     }
   </style>
   <template>
-    <asq-toolbar question="[[ question ]]" questions="[[ question ]]}" close-dialog='[[ closeDialog ]]'></asq-toolbar>
+    <asq-toolbar 
+      question="[[ question ]]" 
+      questions="[[ questions ]]" 
+      close-dialog="[[ closeDialog ]]" 
+      student-questions-enabled="[[ studentQuestionsEnabled ]]">
+    </asq-toolbar>
   </template>
   <script>
     Polymer({
@@ -43,6 +48,14 @@
         closeDialog: {
           type: Boolean,
           notify: true,
+        },
+        /* This is changed from the parent element, everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
+           By default, the button is disabled
+        */
+        studentQuestionsEnabled: {
+          type: Boolean,
+          notify: true,
+          value: false,
         },
       },
      })

@@ -178,7 +178,7 @@
         </div>
       </div>
       <div main-title></div>
-      <paper-button icon="menu" on-tap="_togglePanel"> Ask a question </paper-button>
+      <paper-button icon="menu" on-tap="_togglePanel" disabled="{{ !studentQuestionsEnabled }}"> Ask a question </paper-button>
       <paper-drawer-panel selected="[[ _paperDrawerSelected ]]" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
           <div drawer id="paperDrawerPanelDiv"> 
             <div id="currentSlideText"> [[ _currentSlide ]] </div>
@@ -293,7 +293,15 @@
           type: Boolean,
           notify: true,
           observer: '_closePaperDialog'
-        }
+        },
+        /* This is changed from the parent element, everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
+           By default, the button is disabled
+        */
+        studentQuestionsEnabled: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
 
       },
       observers: [

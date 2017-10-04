@@ -10,7 +10,12 @@
       <asq-live-app-presenter></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
-      <asq-live-app-viewer question="[[ question ]]" questions="[[ questions ]]" close-dialog="[[ closeDialog ]]"></asq-live-app-viewer> 
+      <asq-live-app-viewer 
+        question="[[ question ]]" 
+        questions="[[ questions ]]" 
+        close-dialog="[[ closeDialog ]]" 
+        student-questions-enabled="[[ studentQuestionsEnabled ]]"> 
+      </asq-live-app-viewer> 
     </template>
   </template>
   
@@ -44,6 +49,14 @@
           notify: true,
           value: false,
         },
+        /* This is changed from the parent element, everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
+           By default, the button is disabled
+        */
+        studentQuestionsEnabled: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
       },
       /*
         Called from the clients connected to ASQ, sets the `question` property
@@ -73,6 +86,13 @@
       */
       closeModal: function () {
         this.set('closeDialog', !this.closeDialog);
+      },
+      /*
+        Called from the clients connected to ASQ, sets the `studentQuestionsEnabled` property, it is used to determine wheter the student questions are enabled or not.
+        @return {}
+      */
+      updateQuestionsStatus: function(studentQuestionsEnabled) {
+        this.set('studentQuestionsEnabled', studentQuestionsEnabled);
       },
     })
   </script>
