@@ -11,89 +11,32 @@
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
       <asq-live-app-viewer 
-        question="[[ question ]]" 
-        questions="[[ questions ]]" 
-        close-dialog="[[ closeDialog ]]" 
-        student-questions-enabled="[[ studentQuestionsEnabled ]]"> 
+        event-bus="[[eventBus]]">
       </asq-live-app-viewer> 
     </template>
   </template>
   
   <script>
-    Polymer({
-      is:"asq-live-app",
-      behaviors:[
-      ASQ.asqElementBehavior
-      ],
-      properties: {
-        /* 
-          This is the question that is showed in the paper dialog, this object contains every data that is needed for the paper dialog 
-        */
-        question: {
-          type: Object,
-          notify: true,
-        },
-        /* 
-          Array of Objects that is used by the dom repeat on the paper drawer panel, it is used to display all the viewer
-           questions under the text area
-         */
-        questions: {
-          type: Array,
-          notify: true,
-        },
-        /* This is changed from the parent element, everytime it changes, it means that the dialog that is currently open, should 
-           closed
-        */
-        closeDialog: {
-          type: Boolean,
-          notify: true,
-          value: false,
-        },
-        /* This is changed from the parent element, everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
-           By default, the button is disabled
-        */
-        studentQuestionsEnabled: {
-          type: Boolean,
-          notify: true,
-          value: false,
-        },
-      },
-      /*
-        Called from the clients connected to ASQ, sets the `question` property
-        @return {}
-      */
-      showQuestion: function (question) {
-        this.set('question', question);
-      },
-      /*
-        Called from the clients connected to ASQ, sets upvotes and downvotes of the `question` property, it is called when a question is rated
-        @return {}
-      */
-      questionRated: function (question) {
-        this.set('question.upvotes', question.upvotes);
-        this.set('question.downvotes', question.downvotes);
-      },
-      /*
-        Called from the clients connected to ASQ, sets the `questions` property, it means that the questions needs to be updated, since a new question was added
-        @return {}
-      */
-      updateQuestions: function (questions) {
-        this.set('questions', questions);
-      },
-      /*
-        Called from the clients connected to ASQ, sets the `closeDialog` property, it is used to determine wheter the modal should be closed or not.
-        @return {}
-      */
-      closeModal: function () {
-        this.set('closeDialog', !this.closeDialog);
-      },
-      /*
-        Called from the clients connected to ASQ, sets the `studentQuestionsEnabled` property, it is used to determine wheter the student questions are enabled or not.
-        @return {}
-      */
-      updateQuestionsStatus: function(studentQuestionsEnabled) {
-        this.set('studentQuestionsEnabled', studentQuestionsEnabled);
-      },
-    })
+Polymer({
+  is: 'asq-live-app',
+  behaviors: [
+    ASQ.asqElementBehavior,
+  ],
+  properties: {
+    /**
+     * Event bus to communicate with ASQ
+     */
+    eventBus: {
+      type: Object,
+      notify: true,
+    },
+  },
+
+  created: function () {
+    document.addEventListener('asq-ready', function (evt) {
+      this.eventBus = evt.detail.asqEventBus;
+    }.bind(this));
+  },
+});
   </script>
 </dom-module>
