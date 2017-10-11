@@ -703,18 +703,18 @@ Polymer({
   },
 
   _handleLiveAppEvent: function (evt) {
-    if (evt.data !== undefined) evt = evt.data;
-    switch (evt.type) {
+    const data = evt.type;
+    switch (data.type) {
       case 'student-question-rated':
-        return this._questionRated(evt.question);
-      case 'share-student-question':
-        return this._updateShowedQuestion(evt.question);
+        return this._questionRated(data.question);
+      case 'broadcast-student-question':
+        return this._updateShowedQuestion(data.question);
       case 'update-student-questions':
-        return this._updateQuestions(evt.questions);
-      case 'close-modal':
+        return this._updateQuestions(data.questions);
+      case 'close-question-broadcast':
         return this._closeModal();
-      case 'toggle-student-questions':
-        return this._updateQuestionsStatus(evt.studentQuestionsEnabled);
+      case 'toggle-student-question-functionality':
+        return this._updateQuestionsStatus(data.studentQuestionsEnabled);
       default:
         return;
     }
