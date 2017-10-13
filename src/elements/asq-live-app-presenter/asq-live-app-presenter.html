@@ -1,17 +1,26 @@
 <link rel="import" href="../../../../polymer/polymer.html">
 <link rel="import" href="../../../../asq-base/asq-base.html">
-<link rel="import" href="../asq-toolbar/asq-toolbar.html">
+<link rel="import" href="../asq-dialog/asq-dialog.html">
 <dom-module id="asq-live-app-presenter">
 
   <template>
-
+    <asq-dialog use-icons="true" event-bus="{{ eventBus }}"></asq-dialog>
   </template>
   <script>
-    Polymer({
-      is:'asq-live-app-presenter',
-      behaviors:[
-      ASQ.asqElementBehavior
-      ]
-    });
-  </script>
+Polymer({
+  is: 'asq-live-app-presenter',
+  behaviors: [
+    ASQ.asqElementBehavior,
+  ],
+  properties: {
+    /**
+     * Event bus to communicate with ASQ
+     */
+    eventBus: {
+      type: Object,
+      notify: true,
+    },
+  },
+});
+</script>
 </dom-module>

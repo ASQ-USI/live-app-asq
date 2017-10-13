@@ -8,7 +8,8 @@
     "app-layout": "PolymerElements/app-layout#^0.10.0",
     "polymer": "Polymer/polymer#^1.4.0",
     "paper-slider": "PolymerElements/paper-slider#^1.0.12",
-    "asq-base": "ASQ-USI-Elements/asq-base#master"
+    "asq-base": "ASQ-USI-Elements/asq-base#master",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#1.0.10"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

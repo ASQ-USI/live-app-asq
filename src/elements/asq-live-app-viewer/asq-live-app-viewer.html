@@ -2,24 +2,36 @@
 <link rel="import" href="../../../../asq-base/asq-base.html">
 <link rel="import" href="../asq-toolbar/asq-toolbar.html">
 <dom-module id="asq-live-app-viewer">
+  <style>
+    :host{
+      bottom:0;
+      position: fixed;
+      width: 100%;
+      color: black;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
   <template>
-    <style>
-      :host{
-        bottom:0;
-        position: fixed;
-        width: 100%;
-        color: black;
-        left: 0;
-      }
-    </style>
-    <asq-toolbar></asq-toolbar>
+    <asq-toolbar 
+      event-bus="[[eventBus]]">
+    </asq-toolbar>
   </template>
   <script>
-    Polymer({
-      is:'asq-live-app-viewer',
-      behaviors:[
-      ASQ.asqElementBehavior
-      ]
-    });
+Polymer({
+  is: 'asq-live-app-viewer',
+  behaviors: [
+    ASQ.asqElementBehavior,
+  ],
+  properties: {
+    /**
+     * Event bus to communicate with ASQ
+     */
+    eventBus: {
+      type: Object,
+      notify: true,
+    },
+  },
+});
   </script>
 </dom-module>

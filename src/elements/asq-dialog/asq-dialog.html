@@ -1,0 +1,370 @@
+<link rel="import" href="../../../../polymer/polymer.html">
+<link rel="import" href="../../../../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../../../paper-button/paper-button.html">
+<link rel="import" href="../../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../../iron-icon/iron-icon.html">
+<!--
+`<asq-dialog>` is a `<paper-dialog>` which will be shown when the presenter broadcast a question
+-->
+
+<dom-module id="asq-dialog">
+  <style>
+    paper-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      margin: 0px;
+      height: 92%;
+      width: 100%;
+    }
+    .questionsDiv {
+      overflow-y: scroll;
+      /*This property is needed otherwise it won't scroll!!!*/
+      height: 83%;
+    }
+    #dialogHeader {
+      font-size: 2.0em;
+      line-height: 2;
+    }
+    #dialogContent > p {
+      font-size: -webkit-xxx-large;
+      line-height: 1;
+    }
+    #dialogContent {
+      height: 77%;
+      overflow-y: scroll;
+    }
+    ::-webkit-scrollbar{
+      width: 0px;
+    }
+    .up {
+      color: #9b9b9b;
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      };   
+    }
+    .down {
+      color: #9b9b9b;
+      height: 20px;
+      /*padding-left: 10px;*/
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      }; 
+    }
+
+    .modalIcon {
+      padding: 7px;
+    }
+
+    .votingInfo{
+      width: 120px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+
+    .thumb-container{
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+      overflow-x: hidden;
+    }
+
+    .thumb-score{
+      font-size: 0.9em;
+      padding-top: 1px;
+    }
+
+  </style>
+  <template>
+    <paper-dialog id="dialog" opened="{{ _paperDialogOpened }}" modal with-backdrop="[[ _withBackdrop ]]">
+      <h2 id="dialogHeader"> [[ _header ]]</h2>
+      <div id="dialogContent">
+        <p>[[ _content ]]</p>
+      </div>
+      <template is="dom-if" if="{{ useButtons }}">
+        <div class="buttons">
+          <div id="thumbUpDiv">
+            <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" class="up"></paper-icon-button>
+            <span>[[ question.upvotes.length ]]</span>
+          </div>
+          <div id="thumbDownDiv">
+            <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" class="down"></paper-icon-button>
+            <span>[[ question.downvotes.length ]]</span>
+          </div>
+        </div>
+      </template>
+      <template is="dom-if" if="{{ useIcons }}">
+        <div class="buttons">
+          <div>
+            <iron-icon icon="icons:thumb-up" class="up modalIcon"></iron-icon>
+            <span modal="modalIcon">[[ question.upvotes.length ]]</span>
+          </div>
+          <div>
+            <iron-icon icon="icons:thumb-down" class="down modalIcon"></iron-icon>
+            <span modal="modalIcon"> [[ question.downvotes.length ]]</span>
+          </div>
+        </div>
+      </template>
+    </paper-dialog>
+  </template>
+  <script>
+Polymer({
+  is: 'asq-dialog',
+  properties: {
+    /* Binded to the `opened` property of the paper dialog, which can be `true` or `false` */
+    _paperDialogOpened: {
+      type: Boolean,
+      notify: true,
+    },
+    /* Boolean that helps understand whether the dialog is open or not */
+    _isPaperDialogOpen: {
+      type: Boolean,
+      computed: '_paperDialogOpenedChanged(_paperDialogOpened)',
+    },
+    /* This is the question that is showed in the paper dialog, 
+       this object contains every data that is needed for the paper dialog */
+    question: {
+      type: Object,
+      notify: true,
+      observer: '_showQuestion',
+    },
+    /* This property is binded to the paper dialog to disable the backdrop */
+    _withBackdrop: {
+      type: Boolean,
+      value: false,
+    },
+    /* Everytime it changes, it means that the dialog that is currently open, should 
+       closed
+    */
+    closeDialog: {
+      type: Boolean,
+      notify: true,
+      observer: '_closePaperDialog',
+    },
+
+    _header: {
+      type: String,
+    },
+
+    _content: {
+      type: String,
+    },
+
+    useButtons: {
+      type: Boolean,
+      value: false,
+    },
+
+    useIcons: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Event bus to communicate with ASQ
+     */
+    eventBus: {
+      type: Object,
+      observer: '_eventBusChanged',
+      notify: true,
+    },
+
+  },
+  observers: [
+    '_updatePointerEvents(_isPaperDialogOpen)',
+  ],
+  /*
+    Given an HTMLElement and a string changes the element pointer events
+    @param HTMLElement element - The element whose pointer events needed to be changed
+    @param String pointerEvents - The pointer events to be set to, can be `auto` or `none`
+    @return {}
+  */
+  setElementPointerEvents: function (element, pointerEvents) {
+    element.style.pointerEvents = pointerEvents;
+  },
+  /*
+    Returns the paper dialog
+    @return {HTMLElement}
+    
+  */
+  getPaperDialog: function () {
+    return this.$.dialog;
+  },
+  /*
+    Returns the paper dialog content, which is a div
+    @return {HTMLElement}
+    
+  */
+  getDialogContent: function () {
+    return this.$.dialogContent;
+  },
+  /*
+    Sets the _isPaperDialogOpen property
+    @return {Boolean}
+    
+  */
+  _isDialogOpen: function () {
+    return this._isPaperDialogOpen;
+  },
+  /*
+    Called everytime the `opened` property of the paper drawer dialog changes
+    @return {Boolean}
+    
+  */
+  _paperDialogOpenedChanged(val) {
+    return val;
+  },
+  /*
+    Opens the paper dialog
+    @return {}
+    
+  */
+  _openPaperDialog: function () {
+    const dialog = this.getPaperDialog();
+    dialog.open();
+  },
+  /*
+    Closes the paper dialog
+    @return {}
+    
+  */
+  _closePaperDialog: function () {
+    const dialog = this.getPaperDialog();
+    dialog.close();
+  },
+  /*
+    Fires a live-app event so it can be retrieved from the client
+    @return {}
+    
+  */
+  _sendLiveAppEvent: function (event) {
+    this.fire('live-app', event);
+  },
+  /*
+    Called everytime the pointer events of the paper dialog needs to be changed, if the dialog is open then it sets the pointer
+    events to `auto`, sets to `none` otherwise
+    @return {}
+    
+  */
+  _updateDialogPointerEvents: function () {
+    const dialog = this.getPaperDialog();
+    let ptrEvents = 'none';
+    if (this._isDialogOpen()) {
+      ptrEvents = 'auto';
+    }
+    this.setElementPointerEvents(dialog, ptrEvents);
+  },
+  /*
+    Called everytime `_isPaperDrawerOpen` and `_isPaperDialogOpen` properties changes, it changes the pointer events of the paper dialog and the paper drawer panel
+    @return {}
+    
+  */
+  _updatePointerEvents: function () {
+    if (this.useButtons) {
+      this._updateDialogPointerEvents();
+    }
+  },
+
+  /*
+    Called everytime the presenter has broadcasted a question, it means that the `question` property has changes
+    @return {}
+  */
+  _showQuestion: function () {
+    this._openPaperDialog();
+  },
+
+  /*
+    Called everytime the thumbs-up button is pressed, it changes color of the button, sets the information that it's an upvote and fires a live-app event
+    @return {}
+  */
+  _upvoteQuestion: function (e) {
+    const votingInfo = Polymer.dom(e).path[4];
+    const thumbContainer = Polymer.dom(votingInfo).children[1];
+    const thumbDownBtn = Polymer.dom(thumbContainer).children[0];
+    thumbDownBtn.style.color = '#9b9b9b';
+    Polymer.dom(e).localTarget.style.color = '#66BB6A';
+    const questionId = this.question.id;
+    const event = {
+      type: 'student-question-rated',
+      data: {
+        upvote: true,
+        questionId,
+      },
+    };
+    this._sendLiveAppEvent(event);
+  },
+  /*
+    Called everytime the thumbs-down button is pressed, it changes color of the button, sets the information that
+    it is a downvote and fires a live-app event
+    @return {}
+  */
+  _downvoteQuestion: function (e) {
+    const votingInfo = Polymer.dom(e).path[4];
+    const thumbContainer = Polymer.dom(votingInfo).children[0];
+    const thumbUpBtn = Polymer.dom(thumbContainer).children[0];
+    thumbUpBtn.style.color = '#9b9b9b';
+    Polymer.dom(e).localTarget.style.color = '#EF5350';
+    const questionId = this.question.id;
+    const event = {
+      type: 'student-question-rated',
+      data: {
+        downvote: true,
+        questionId,
+      },
+    };
+    this._sendLiveAppEvent(event);
+  },
+  /*
+    Sets the `question` property
+    @return {}
+  */
+  _updateShowedQuestion: function (modalData) {
+    this.set('_content', modalData.content);
+    this.set('_header', modalData.header);
+    if (modalData.question !== undefined) {
+      this.set('question', modalData.question);
+    }
+  },
+  /*
+    Sets upvotes and downvotes of the `question` property, it is called when a question is rated
+    @return {}
+  */
+  _questionRated: function (question) {
+    this.set('question.upvotes', question.upvotes);
+    this.set('question.downvotes', question.downvotes);
+  },
+  /*
+    Sets the `closeDialog` property, 
+    it is used to determine wheter the modal should be closed or not.
+    @return {}
+  */
+  _closeModal: function () {
+    this.set('closeDialog', !this.closeDialog);
+  },
+
+  _eventBusChanged: function (eventBus) {
+    if (!eventBus) return;
+    eventBus.on('asq:live-app', this._handleLiveAppEvent.bind(this));
+  },
+
+  _handleLiveAppEvent: function (evt) {
+    const data = evt.data;
+    switch (data.type) {
+      case 'student-question-rated':
+        return this._questionRated(data.question);
+      case 'broadcast-student-question':
+        return this._updateShowedQuestion(data);
+      case 'close-question-broadcast':
+        return this._closeModal();
+      default:
+        return;
+    }
+  },
+});
+  </script>
+</dom-module>

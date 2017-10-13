@@ -1,57 +1,558 @@
 <link rel="import" href="../../../../polymer/polymer.html">
 <link rel="import" href="../../../../paper-slider/paper-slider.html">
 <link rel="import" href="../../../../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../../../paper-button/paper-button.html">
+<link rel="import" href="../../../../paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../../iron-icon/iron-icon.html">
+<link rel="import" href="../asq-dialog/asq-dialog.html">
+<!--
+`<asq-toolbar>` injects a toolbar that contains a `<paper-slider>`, a `<paper-drawer-panel>` and a `<paper-dialog>`.
+  The element is injected automatically from the server ASQ
+-->
+
 <dom-module id="asq-toolbar">
-    <style>
-        app-toolbar {
-            background-color: #CFD8DC;
-            font-family: 'Roboto', Helvetica, sans-serif;
-            height: 60px;
-        }
-        #lecture-quality-label{
-            font-size: 12px;
-            padding: 0 20px;
-            text-align: center;
-        }
-        #sliderContainer{
-            display:inline-flex;
-        }
-        .sliderText{
-            font-size: 12px;
-            padding-top: 10px;
-        }
-    </style>
-    <template>
-        <app-toolbar id="toolbar">
-            <div>
-                <div id="lecture-quality-label">How well do you understand this slide?</div>
-                <div id="sliderContainer">
-                    <span class="sliderText">I am lost</span>
-                    <paper-slider min="0" max="100" value="{{sliderValue}}" on-change="sliderChange"></paper-slider>
-                    <span class="sliderText">I get it</span>
-                </div>
+  <style>
+    :host{
+      --paper-drawer-panel-right-drawer-container: {
+        padding: 10px;
+      };
+    }
+    app-toolbar {
+      background-color: #CFD8DC;
+      font-family: 'Roboto', Helvetica, sans-serif;
+
+      height: 60px;
+    }
+    #lecture-quality-label{
+      font-size: 12px;
+      padding: 0 20px;
+      text-align: center;
+    }
+    #sliderContainer{
+      display:inline-flex;
+    }
+    .sliderText{
+      font-size: 12px;
+      padding-top: 10px;
+    }
+    #bgDiv{
+      position: fixed; 
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0; 
+      background: transparent;
+    }
+    #currentSlideText{
+      font-size: 0.85em;
+      text-align: center;
+    }
+    #paperDrawerPanel{
+      @apply(--layout-fixed-bottom);
+      z-index: -1;
+    }
+    #sendButtonContainer{
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+    .questionsDiv {
+      overflow-y: scroll;
+      /*This property is needed otherwise it won't scroll!!!*/
+      height: 83%;
+    }
+    ::-webkit-scrollbar{
+      width: 0px;
+    }
+    .container {
+      display: flex;
+      color: black;
+      background: white;
+      margin: 3px auto;
+      padding: 5px;
+    }
+    .questionDataContainer {
+      flex: 1;
+      @apply(--layout-horizontal);
+      @apply(--layout-start);
+    }
+    .slideInfo {
+      width: 100px;
+      font-size: 0.8em;
+      color: #696969;
+    }
+    .slideInfoHeader{
+      font-size: 1em;
+      color: white;
+    }
+    .questionData {
+      flex: 1;
+      overflow-y: scroll;
+    }
+    .userInfo {
+      width: 140px;
+    }
+    .votingInfo{
+      width: 120px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+    .up {
+      color: #9b9b9b;
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      };   
+    }
+    .down {
+      color: #9b9b9b;
+      height: 20px;
+      /*padding-left: 10px;*/
+      padding: 0;
+      height: 20px;
+      --iron-icon: {
+        height: 20px;
+      }; 
+    }
+
+    .thumb-container{
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      overflow-x: hidden;
+    }
+
+    .thumb-score{
+      font-size: 0.9em;
+      padding-top: 1px;
+    }
+
+    .textWrap {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .questionContent {
+      overflow-y: scroll;
+      height: 60px;
+      width: 250px;
+      overflow-wrap: break-word;
+      -ms-hyphens: auto;
+      -moz-hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    #textArea {
+      --paper-input-container-input:{
+        max-height: 75px;
+      }
+    }
+  </style>
+  <template>
+    <app-toolbar id="toolbar" main>
+      <div>
+        <div id="lecture-quality-label">How well do you understand this slide?</div>
+        <div id="sliderContainer">
+          <span class="sliderText">I am lost</span>
+          <paper-slider min="0" max="100" value="{{ sliderValue }}" on-change="sliderChange"></paper-slider>
+          <span class="sliderText">I get it</span>
+        </div>
+      </div>
+      <div main-title></div>
+      <paper-button icon="menu" on-tap="_togglePanel"> Ask a question </paper-button>
+      <paper-drawer-panel selected="{{ _paperDrawerSelected }}" id="paperDrawerPanel" force-narrow="true" right-drawer drawer-width="500px">
+          <div drawer id="paperDrawerPanelDiv"> 
+            <div id="currentSlideText"> [[ _currentSlide ]] </div>
+            <paper-textarea id="textArea" label="Enter your question or remark here" max-rows="4"></paper-textarea>
+            <div id="sendButtonContainer">
+              <paper-button icon="menu" on-tap="_sendQuestion" raised id="sendButton" disabled="{{ !studentQuestionsEnabled }}">
+              Send
+            </paper-button>
             </div>
+            <div class="questionsDiv">
+              <template is="dom-repeat" items="[[ questions ]]">
+                <div class="container">
+                  <div class="questionDataContainer">
+                    <div class="slideInfo textWrap">[[ item.submission.slide ]]</div>
+                    <div class="questionData">
+                      <div class$="[[ _setClass(item.submission.value) ]]">[[ item.submission.value ]]</div>
+                    </div>
+                    <div class="votingInfo">
+                    <div class="thumb-container">
+                      <paper-icon-button icon="icons:thumb-up" class="up" on-tap="_upvoteQuestion"></paper-icon-button>
+                      <div class="thumb-score">[[ item.upvotes.length ]]</div>
+                    </div>
+                    <div class="thumb-container">
+                      <paper-icon-button icon="icons:thumb-down" class="down" on-tap="_downvoteQuestion"></paper-icon-button>
+                      <div class="thumb-score"> [[ item.downvotes.length ]]</div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+      </paper-drawer-panel>
+    </app-toolbar>
+    <asq-dialog use-buttons="true" event-bus="{{ eventBus }}"></asq-dialog>
+  </template>
+  <script>
+Polymer({
+  is: 'asq-toolbar',
+  properties: {
+    /* Default value for the paper-slider */
+    sliderValue: {
+      type: Number,
+      value: 50,
+    },
+    /* Boolean that is calculated everytime the `_paperDrawerSelected` property changes */
+    _isPaperDrawerOpen: {
+      type: Boolean,
+      computed: '_paperDrawerSelectedChanged(_paperDrawerSelected)',
+    },
+    /* Binded to the `selected` property of the paper drawer panel, 
+       which can be `main` or `drawer` */
+    _paperDrawerSelected: {
+      type: String,
+      notify: true,
+    },
+    /* It is used by the paper drawer panel to display the name of the current slide */
+    _currentSlide: {
+      type: String,
+      notify: true,
+    },
+    /* This is calculated everytime the user opens the drawer panel, it's needed for the db */
+    _answerStartTime: {
+      type: Date,
+    },
+    /* Array of Objects that is used by the dom repeat on the paper drawer panel, 
+       it is used to display all the viewer questions under the text area
+     */
+    questions: {
+      type: Array,
+      notify: true,
+    },
+    /* Everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
+       By default, the button is disabled
+    */
+    studentQuestionsEnabled: {
+      type: Boolean,
+      notify: true,
+      value: false,
+    },
 
-        </app-toolbar>
-    </template>
-    <script>
-        Polymer({
-            is:'asq-toolbar',
-            properties:{
-                sliderValue:{
-                    type: Number,
-                    value: 50
-                }
-            },
-            sliderChange: function () {
-                this.fire('liveApp', {
-                    data:{
-                        value:this.sliderValue
-                    },
-                    type:"student-perception-change"
-                })
-            }
-        })
-    </script>
+    /**
+     * Event bus to communicate with ASQ
+     */
+    eventBus: {
+      type: Object,
+      observer: '_eventBusChanged',
+      notify: true,
+    },
 
+  },
+  observers: [
+    '_updatePointerEvents(_isPaperDrawerOpen)',
+  ],
+  /*
+    Given an HTMLElement and a string changes the element pointer events
+    @param HTMLElement element - The element whose pointer events needed to be changed
+    @param String pointerEvents - The pointer events to be set to, can be `auto` or `none`
+    @return {}
+  */
+  setElementPointerEvents: function (element, pointerEvents) {
+    element.style.pointerEvents = pointerEvents;
+  },
+  /*
+    Returns the paper drawer panel
+    @return {HTMLElement}
+    
+  */
+  getPaperDrawerPanel: function () {
+    return this.$.paperDrawerPanel;
+  },
+  /*
+    Returns the paper text area
+    @return {HTMLElement}
+    
+  */      
+  getTextArea: function () {
+    return this.$.textArea;
+  },
+  /*
+    Returns the send button
+    @return {HTMLElement}
+    
+  */
+  getSendButton: function () {
+    return this.$.sendButton;
+  },
+  /*
+    Returns the name of the slide taken from the URL
+    @return {String}
+    
+  */
+  getSlideNameFromWindow: function () {
+    return window.location.hash.split('/')[1];
+  },
+  /*
+    Returns the name of the current slide
+    @return {String}
+    
+  */
+  getCurrentSlide: function () {
+    return this._currentSlide;
+  },
+  /*
+    Returns when the user has started typing a question
+    @return {Date}
+    
+  */
+  getAnswerStartTime: function () {
+    return this._answerStartTime;
+  },
+  /*
+    Sets the _currentSlide property
+    @return {}
+    
+  */
+  setCurrentSlide: function (name) {
+    this.set('_currentSlide', name);
+  },
+  /*
+    Sets the _answerStartTime property
+    @return {}
+    
+  */
+  setAnswerStartTime: function (date) {
+    this.set('_answerStartTime', date);
+  },
+  /*
+    Returns the _isPaperDrawerOpen property
+    @return {Boolean}
+    
+  */
+  _isDrawerOpen: function () {
+    return this._isPaperDrawerOpen;
+  },
+  /*
+    Called everytime the `selected` property of the paper drawer panel changes
+    @return {Boolean}
+    
+  */
+  _paperDrawerSelectedChanged: function(val) {
+    return val === 'drawer';
+  },
+  /*
+    Called everytime the value of the slider changes
+    @return {}
+    
+  */     
+  sliderChange: function () {
+    const event = {
+      data: {
+        value: this.sliderValue,
+      },
+      type: 'student-perception-change',
+    };
+    this._sendLiveAppEvent(event);
+  },
+  /*
+    Fires a live-app event so it can be retrieved from the client
+    @return {}
+    
+  */
+  _sendLiveAppEvent: function (event) {
+    this.fire('live-app', event);
+  },
+  /*
+    Takes the content of the text area, removes  whitespacesand then sends the event to the client
+    @return {}
+    
+  */
+  _sendQuestion: function () {
+    const textArea = this.getTextArea();
+    const text = textArea.value;
+    // User has not inserted any text
+    if (typeof text === 'undefined') return;
+    // trim() removes whitespaces
+    const content = text.trim();
+    if (content.length === 0) return;
+    const currentSlide = this.getCurrentSlide();
+    const answerStartTime = this.getAnswerStartTime();
+    const sumbissionDate = new Date();
+    const event = {
+      answerStartTime,
+      sumbissionDate,
+      data: {
+        slide: currentSlide,
+        value: content,
+      },
+      type: 'student-question-submitted',
+    };
+    this._sendLiveAppEvent(event);
+    textArea.value = '';
+    this._handleBtnTimeout();
+  },
+  /*
+    Called everytime the user clicks on the `ASK A QUESTION` button, it toggles the drawer panel, if it's open it sets the 
+    _currentSlide property and the `_answerStartTime` property
+    @return {}
+    
+  */
+  _togglePanel: function () {
+    const drawer = this.getPaperDrawerPanel();
+    drawer.togglePanel();
+    if (this._isDrawerOpen()) {
+      const slideName = this.getSlideNameFromWindow();
+      this.setCurrentSlide(slideName);
+      const currentDate = new Date();
+      this.setAnswerStartTime(currentDate);
+    }
+  },
+  /*
+    Called everytime the pointer events of the drawer panel needs to be changed, if the drawer is open then it sets the pointer
+    events to `auto`, sets to `none` otherwise
+    @return {}
+    
+  */
+  _updateDrawerPointerEvents: function () {
+    const drawer = this.getPaperDrawerPanel();
+    let ptrEvents = 'none';
+    if (this._isDrawerOpen()) {
+      ptrEvents = 'auto';
+    }
+    this.setElementPointerEvents(drawer, ptrEvents);
+  },
+  /*
+    Called everytime `_isPaperDrawerOpen` property changes, it changes the pointer events of the paper drawer panel
+    @return {}
+    
+  */
+  _updatePointerEvents: function () {
+    this._updateDrawerPointerEvents();
+  },
+
+  /*
+    Called everytime the thumbs-up button is pressed, it changes color of the button, sets the information that it's an upvote and fires a live-app event
+    @return {}
+  */
+  _upvoteQuestion: function (e) {
+    const votingInfo = Polymer.dom(e).path[4];
+    const thumbContainer = Polymer.dom(votingInfo).children[1];
+    const thumbDownBtn = Polymer.dom(thumbContainer).children[0];
+    thumbDownBtn.style.color = '#9b9b9b';
+    Polymer.dom(e).localTarget.style.color = '#66BB6A';
+    let questionId;
+    // This is made so I can differentiate if it's an upvote from the modal or from the paper drawer
+    if (e.model === undefined) {
+      questionId = this.question.id;
+    } else {
+      questionId = e.model.item.id;
+    }
+    const event = {
+      type: 'student-question-rated',
+      data: {
+        upvote: true,
+        questionId,
+      },
+    };
+    this._sendLiveAppEvent(event);
+  },
+  /*
+    Called everytime the thumbs-down button is pressed, it changes color of the button, sets the information that
+    it is a downvote and fires a live-app event
+    @return {}
+  */
+  _downvoteQuestion: function (e) {
+    const votingInfo = Polymer.dom(e).path[4];
+    const thumbContainer = Polymer.dom(votingInfo).children[0];
+    const thumbUpBtn = Polymer.dom(thumbContainer).children[0];
+    thumbUpBtn.style.color = '#9b9b9b';
+    Polymer.dom(e).localTarget.style.color = '#EF5350';
+    let questionId;
+    if (e.model === undefined) {
+      questionId = this.question.id;
+    } else {
+      questionId = e.model.item.id;
+    }
+    const event = {
+      type: 'student-question-rated',
+      data: {
+        downvote: true,
+        questionId,
+      },
+    };
+    this._sendLiveAppEvent(event);
+  },
+
+
+  /*
+    Called everytime the user presses the send button, it disables for five second the button and changes the text inside the button
+    @return {}
+  */
+  _handleBtnTimeout: function () {
+    const button = this.getSendButton();
+    let seconds = 5;
+    const btnText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = 'Question submitted wait ' + seconds + 's';
+    const interval = setInterval(function () {
+      seconds--;
+      if (seconds === 0) {
+        clearInterval(interval);
+        button.innerHTML = btnText;
+        button.disabled = false;
+        return;
+      }
+      button.disabled = true;
+      button.innerHTML = 'Question submitted wait ' + seconds + 's';
+    }, 1000);
+  },
+
+  /*
+    This is for the paper drawer panel, if the question content is longer than 26 characters 
+    then it adds the class `questionContent` to the element
+    @return {String}
+  */
+  _setClass: function (text) {
+    if (text.length < 26) return '';
+    return 'questionContent';
+  },
+  /*
+    Sets the `questions` property, it means that the questions needs to be updated, 
+    since a new question was added
+    @return {}
+  */
+  _updateQuestions: function (questions) {
+    this.set('questions', questions);
+  },
+  /*
+    Sets the `studentQuestionsEnabled` property, 
+    it is used to determine wheter the student questions are enabled or not.
+    @return {}
+  */
+  _updateQuestionsStatus: function (studentQuestionsEnabled) {
+    this.set('studentQuestionsEnabled', studentQuestionsEnabled);
+  },
+
+  _eventBusChanged: function (eventBus) {
+    if (!eventBus) return;
+    eventBus.on('asq:live-app', this._handleLiveAppEvent.bind(this));
+  },
+
+  _handleLiveAppEvent: function (evt) {
+    const data = evt.data;
+    switch (data.type) {
+      case 'update-student-questions':
+        return this._updateQuestions(data.questions);
+      case 'toggle-student-question-functionality':
+        return this._updateQuestionsStatus(data.studentQuestionsEnabled);
+      default:
+        return;
+    }
+  },
+});
+  </script>
 </dom-module>
