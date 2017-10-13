@@ -265,7 +265,9 @@ Polymer({
     
   */
   _updatePointerEvents: function () {
-    this._updateDialogPointerEvents();
+    if (this.useButtons) {
+      this._updateDialogPointerEvents();
+    }
   },
 
   /*
