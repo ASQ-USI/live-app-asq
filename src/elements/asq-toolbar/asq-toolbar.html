@@ -7,6 +7,7 @@
 <link rel="import" href="../../../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../../../iron-icons/iron-icons.html">
 <link rel="import" href="../../../../iron-icon/iron-icon.html">
+<link rel="import" href="../asq-dialog/asq-dialog.html">
 <!--
 `<asq-toolbar>` injects a toolbar that contains a `<paper-slider>`, a `<paper-drawer-panel>` and a `<paper-dialog>`.
   The element is injected automatically from the server ASQ
@@ -57,30 +58,10 @@
       @apply(--layout-horizontal);
       @apply(--layout-end-justified);
     }
-    paper-dialog {
-      position: fixed;
-      top: 0;
-      left: 0;
-      margin: 0px;
-      height: 92%;
-      width: 100%;
-    }
     .questionsDiv {
       overflow-y: scroll;
       /*This property is needed otherwise it won't scroll!!!*/
       height: 83%;
-    }
-    #dialogHeader {
-      font-size: 2.0em;
-      line-height: 2;
-    }
-    #dialogContent > p {
-      font-size: -webkit-xxx-large;
-      line-height: 1;
-    }
-    #dialogContent {
-      height: 77%;
-      overflow-y: scroll;
     }
     ::-webkit-scrollbar{
       width: 0px;
@@ -214,22 +195,7 @@
           </div>
       </paper-drawer-panel>
     </app-toolbar>
-    <paper-dialog id="dialog" opened="{{ _paperDialogOpened }}" modal with-backdrop="[[ _withBackdrop ]]">
-      <h2 id="dialogHeader">User [[ question.submission.user ]] asks:</h2>
-      <div id="dialogContent">
-        <p>[[ question.submission.value ]]</p>
-      </div>
-      <div class="buttons">
-        <div id="thumbUpDiv">
-          <paper-icon-button icon="icons:thumb-up" on-tap="_upvoteQuestion" class="up"></paper-icon-button>
-          <span>[[ question.upvotes.length ]]</span>
-        </div>
-        <div id="thumbDownDiv">
-          <paper-icon-button icon="icons:thumb-down" on-tap="_downvoteQuestion" class="down"></paper-icon-button>
-          <span>[[ question.downvotes.length ]]</span>
-        </div>
-      </div>
-    </paper-dialog>
+    <asq-dialog use-buttons="true" event-bus="{{ eventBus }}"></asq-dialog>
   </template>
   <script>
 Polymer({
@@ -251,16 +217,6 @@ Polymer({
       type: String,
       notify: true,
     },
-    /* Binded to the `opened` property of the paper dialog, which can be `true` or `false` */
-    _paperDialogOpened: {
-      type: Boolean,
-      notify: true,
-    },
-    /* Boolean that helps understand whether the dialog is open or not */
-    _isPaperDialogOpen: {
-      type: Boolean,
-      computed: '_paperDialogOpenedChanged(_paperDialogOpened)',
-    },
     /* It is used by the paper drawer panel to display the name of the current slide */
     _currentSlide: {
       type: String,
@@ -270,32 +226,12 @@ Polymer({
     _answerStartTime: {
       type: Date,
     },
-    /* This is the question that is showed in the paper dialog, 
-       this object contains every data that is needed for the paper dialog */
-    question: {
-      type: Object,
-      notify: true,
-      observer: '_showQuestion',
-    },
     /* Array of Objects that is used by the dom repeat on the paper drawer panel, 
        it is used to display all the viewer questions under the text area
      */
     questions: {
       type: Array,
       notify: true,
-    },
-    /* This property is binded to the paper dialog to disable the backdrop */
-    _withBackdrop: {
-      type: Boolean,
-      value: false,
-    },
-    /* Everytime it changes, it means that the dialog that is currently open, should 
-       closed
-    */
-    closeDialog: {
-      type: Boolean,
-      notify: true,
-      observer: '_closePaperDialog',
     },
     /* Everytime it changes it disables/enables the button 'ASK A QUESTION' accordingly
        By default, the button is disabled
@@ -317,7 +253,7 @@ Polymer({
 
   },
   observers: [
-    '_updatePointerEvents(_isPaperDrawerOpen, _isPaperDialogOpen)',
+    '_updatePointerEvents(_isPaperDrawerOpen)',
   ],
   /*
     Given an HTMLElement and a string changes the element pointer events
@@ -343,22 +279,6 @@ Polymer({
   */      
   getTextArea: function () {
     return this.$.textArea;
-  },
-  /*
-    Returns the paper dialog
-    @return {HTMLElement}
-    
-  */
-  getPaperDialog: function () {
-    return this.$.dialog;
-  },
-  /*
-    Returns the paper dialog content, which is a div
-    @return {HTMLElement}
-    
-  */
-  getDialogContent: function () {
-    return this.$.dialogContent;
   },
   /*
     Returns the send button
@@ -417,46 +337,12 @@ Polymer({
     return this._isPaperDrawerOpen;
   },
   /*
-    Sets the _isPaperDialogOpen property
-    @return {Boolean}
-    
-  */
-  _isDialogOpen: function () {
-    return this._isPaperDialogOpen;
-  },
-  /*
     Called everytime the `selected` property of the paper drawer panel changes
     @return {Boolean}
     
   */
   _paperDrawerSelectedChanged: function(val) {
     return val === 'drawer';
-  },
-  /*
-    Called everytime the `opened` property of the paper drawer dialog changes
-    @return {Boolean}
-    
-  */
-  _paperDialogOpenedChanged(val) {
-    return val;
-  },
-  /*
-    Opens the paper dialog
-    @return {}
-    
-  */
-  _openPaperDialog: function () {
-    const dialog = this.getPaperDialog();
-    dialog.open();
-  },
-  /*
-    Closes the paper dialog
-    @return {}
-    
-  */
-  _closePaperDialog: function () {
-    const dialog = this.getPaperDialog();
-    dialog.close();
   },
   /*
     Called everytime the value of the slider changes
@@ -540,35 +426,12 @@ Polymer({
     this.setElementPointerEvents(drawer, ptrEvents);
   },
   /*
-    Called everytime the pointer events of the paper dialog needs to be changed, if the dialog is open then it sets the pointer
-    events to `auto`, sets to `none` otherwise
-    @return {}
-    
-  */
-  _updateDialogPointerEvents: function () {
-    const dialog = this.getPaperDialog();
-    let ptrEvents = 'none';
-    if (this._isDialogOpen()) {
-      ptrEvents = 'auto';
-    }
-    this.setElementPointerEvents(dialog, ptrEvents);
-  },
-  /*
-    Called everytime `_isPaperDrawerOpen` and `_isPaperDialogOpen` properties changes, it changes the pointer events of the paper dialog and the paper drawer panel
+    Called everytime `_isPaperDrawerOpen` property changes, it changes the pointer events of the paper drawer panel
     @return {}
     
   */
   _updatePointerEvents: function () {
     this._updateDrawerPointerEvents();
-    this._updateDialogPointerEvents();
-  },
-
-  /*
-    Called everytime the presenter has broadcasted a question, it means that the `question` property has changes
-    @return {}
-  */
-  _showQuestion: function () {
-    this._openPaperDialog();
   },
 
   /*
@@ -658,35 +521,12 @@ Polymer({
     return 'questionContent';
   },
   /*
-    Sets the `question` property
-    @return {}
-  */
-  _updateShowedQuestion: function (question) {
-    this.set('question', question);
-  },
-  /*
-    Sets upvotes and downvotes of the `question` property, it is called when a question is rated
-    @return {}
-  */
-  _questionRated: function (question) {
-    this.set('question.upvotes', question.upvotes);
-    this.set('question.downvotes', question.downvotes);
-  },
-  /*
     Sets the `questions` property, it means that the questions needs to be updated, 
     since a new question was added
     @return {}
   */
   _updateQuestions: function (questions) {
     this.set('questions', questions);
-  },
-  /*
-    Sets the `closeDialog` property, 
-    it is used to determine wheter the modal should be closed or not.
-    @return {}
-  */
-  _closeModal: function () {
-    this.set('closeDialog', !this.closeDialog);
   },
   /*
     Sets the `studentQuestionsEnabled` property, 
@@ -703,16 +543,10 @@ Polymer({
   },
 
   _handleLiveAppEvent: function (evt) {
-    const data = evt.type;
+    const data = evt.data;
     switch (data.type) {
-      case 'student-question-rated':
-        return this._questionRated(data.question);
-      case 'broadcast-student-question':
-        return this._updateShowedQuestion(data.question);
       case 'update-student-questions':
         return this._updateQuestions(data.questions);
-      case 'close-question-broadcast':
-        return this._closeModal();
       case 'toggle-student-question-functionality':
         return this._updateQuestionsStatus(data.studentQuestionsEnabled);
       default:

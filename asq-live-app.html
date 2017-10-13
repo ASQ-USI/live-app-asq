@@ -7,7 +7,7 @@
 
   <template>
     <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}">
-      <asq-live-app-presenter></asq-live-app-presenter>
+      <asq-live-app-presenter event-bus="[[eventBus]]"></asq-live-app-presenter>
     </template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}">
       <asq-live-app-viewer 
